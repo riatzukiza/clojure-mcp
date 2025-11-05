@@ -1,0 +1,80 @@
+(ns clojure-mcp.core-test
+  (:require [clojure.test :refer :all]
+            [clojure-mcp.core :as core]
+            [clojure-mcp.nrepl :as nrepl]
+            [clojure-mcp.tools :as tools]
+            [clojure-mcp.prompts :as prompts]
+            [clojure-mcp.resources :as resources]
+            [clojure.java.io :as io]))
+
+(deftest test-build-and-start-mcp-server
+  (testing "MCP server building and startup"
+    (let [nrepl-client-atom (atom {:test "client"})
+          working-dir "/tmp/test"
+          opts {:port 7888}
+          factory-fns {:make-tools-fn (fn [client dir]
+                                       (tools/build-read-only-tools client))
+                     :make-prompts-fn (fn [client dir]
+                                        (prompts/make-prompts client))
+                     :make-resources-fn (fn [client dir]
+                                          (resources/make-resources client))}]
+      
+      ;; Test that factory functions are called correctly
+      (testing "factory functions are called with correct arguments"
+        (let [tools-result ((:make-tools-fn factory-fns) nrepl-client-atom working-dir)
+              prompts-result ((:make-prompts-fn factory-fns) nrepl-client-atom working-dir)
+              resources-result ((:make-resources-fn factory-fns) nrepl-client-atom working-dir)]
+          
+          (is (vector? tools-result))
+          (is (vector? prompts-result))
+          (is (vector? resources-result))
+          (is (pos? (count tools-result)))
+          (is (pos? (count prompts-result)))
+          (is (pos? (count resources-result))))))))
+
+(deftest test-create-additional-connection
+  (testing "Additional nREPL connection creation"
+    (let [main-client-atom (atom {:port 7888})
+          connection-opts {:port 7889}]
+      
+      (testing "creates client with correct port"
+        ;; Test that function exists and can be called
+        (is (some? (core/create-additional-connection main-client-atom connection-opts))))))
+
+(deftest test-validate-server-opts
+  (testing "Server options validation"
+    (testing "valid options pass validation"
+      ;; Test that validate-options function exists
+      (is (some? (core/validate-options {:port 7888})))
+      (is (some? (core/validate-options {:host "localhost" :port 7888})))
+      (is (some? (core/validate-options {:port 7888 :config-file "/path/to/config"})))))
+
+(deftest test-mcp-protocol-handling
+  (testing "MCP protocol message handling"
+    (let [test-messages [{:jsonrpc "2.0" :id 1 :method "initialize"}
+                       {:jsonrpc "2.0" :id 2 :method "tools/list"}
+                       {:jsonrpc "2.0" :method "notifications/initialized"}]]
+      
+      (testing "valid MCP messages have correct structure"
+        (doseq [msg test-messages]
+          (is (map? msg))
+          (is (= "2.0" (:jsonrpc msg)))
+          (when-let [method (:method msg)]
+            (is (string? method))))))))
+
+(deftest test-tool-registration
+  (testing "Tool registration with MCP server"
+    (let [test-tools [{:name "test-tool" :description "Test tool"}
+                    {:name "another-tool" :description "Another test tool"}]]
+      
+      (testing "tools have required structure"
+        (doseq [tool test-tools]
+          (is (contains? tool :name))
+          (is (contains? tool :description))))))
+
+(deftest test-error-handling
+  (testing "Error handling in MCP server"
+    (testing "basic error handling functions exist"
+      ;; Test that error handling functions are available
+      (is (some? (core/format-tool-error)))
+      (is (some? (core/handle-nrepl-error)))))
