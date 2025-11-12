@@ -1,70 +1,26 @@
-# Clojure
-.calva/output-window/
-.classpath
-.clj-kondo/.cache
-.cpcache
-.eastwood
-.factorypath
-.lsp
-.hg/
-.hgignore
-.java-version
-.lein-*
-.lsp/.cache
-.lsp/sqlite.db
-.nrepl-history
-.nrepl-port
-.project
-.clj-kondo
-.clojure-mcp
-.projectile
-.rebel_readline_history
-.settings
-.socket-repl-port
-.sw*
-.vscode
-*.class
-*.jar
-*.swp
-*~
-/checkouts
-/classes
-/target
-.aider*
+# Build artifacts
+dist/
+build/
+lib/
+*.tsbuildinfo
 
-# Project specific
-.mcp.json
-/node_modules
-package-lock.json
-package.json
-test/tmp/
-
-src/user.clj
-
-# OS specific
-.DS_Store
-**/.DS_Store
-
-# Temporary files
-NOTES.md
+# Dependencies 
+node_modules/
 *.log
-*.tmp
-/.idea/
-/clojure-mcp.iml
+*.pid
+*.seed
+*.pid.lock
 
-# Development test files
-/dev/edit_test.clj
-/dev/test_*.clj
-/test-complex-sexp.clj
-/bb.edn
-/claude-clj.sh
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Editor backup files
-*#
-.#*
-
-# Log directories
-/logs/
-linux-install.sh
-
-.nx/
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
